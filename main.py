@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import scrolledtext
+from tkinter import scrolledtext, messagebox, filedialog
 from huggingface_hub import InferenceClient
 
-# Replace 'your_huggingface_token' with your actual Hugging Face token
+# Replace 'hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' with your actual Hugging Face token
 huggingface_token = "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"
 
 client = InferenceClient(
@@ -12,6 +12,10 @@ client = InferenceClient(
 
 def get_response():
     user_query = query_entry.get()
+    if not user_query.strip():
+        messagebox.showwarning("Empty Query", "Please enter a query.")
+        return
+
     messages = [{"role": "user", "content": user_query}]
     response_text = ""
 
@@ -26,25 +30,58 @@ def get_response():
         response_text = f"Error: {str(e)}"
 
     response_display.config(state=tk.NORMAL)
-    response_display.insert(tk.END, f"User: {user_query}\nBot: {response_text}\n\n")
+    response_display.insert(tk.END, f"User: {user_query}\n(((T))) AI: {response_text}\n\n")
     response_display.config(state=tk.DISABLED)
+    query_entry.delete(0, tk.END)
+
+def clear_conversation():
+    response_display.config(state=tk.NORMAL)
+    response_display.delete(1.0, tk.END)
+    response_display.config(state=tk.DISABLED)
+
+def save_conversation():
+    conversation = response_display.get(1.0, tk.END)
+    if not conversation.strip():
+        messagebox.showwarning("Empty Conversation", "There is no conversation to save.")
+        return
+    
+    file_path = filedialog.asksaveasfilename(defaultextension=".txt",
+                                             filetypes=[("Text files", "*.txt"),
+                                                        ("All files", "*.*")])
+    if file_path:
+        with open(file_path, "w") as file:
+            file.write(conversation)
+        messagebox.showinfo("Conversation Saved", "The conversation has been saved successfully.")
 
 # Set up the tkinter window
 window = tk.Tk()
-window.title("Chatbot Interface")
+window.title("(((T))) AI Chat Interface")
+window.geometry("600x400")
 
 # Create and place the widgets
-query_label = tk.Label(window, text="Enter your query:")
-query_label.pack()
+frame = tk.Frame(window)
+frame.pack(pady=10)
 
-query_entry = tk.Entry(window, width=50)
-query_entry.pack()
+query_label = tk.Label(frame, text="Enter your query:", font=("Arial", 12))
+query_label.grid(row=0, column=0, padx=5)
 
-send_button = tk.Button(window, text="Send", command=get_response)
-send_button.pack()
+query_entry = tk.Entry(frame, width=50, font=("Arial", 12))
+query_entry.grid(row=0, column=1, padx=5)
 
-response_display = scrolledtext.ScrolledText(window, width=60, height=20, state=tk.DISABLED)
-response_display.pack()
+send_button = tk.Button(frame, text="Send", command=get_response, font=("Arial", 12), bg="#4CAF50", fg="white")
+send_button.grid(row=0, column=2, padx=5)
+
+response_display = scrolledtext.ScrolledText(window, width=70, height=20, state=tk.DISABLED, font=("Arial", 12))
+response_display.pack(pady=10)
+
+button_frame = tk.Frame(window)
+button_frame.pack(pady=5)
+
+clear_button = tk.Button(button_frame, text="Clear", command=clear_conversation, font=("Arial", 12), bg="#f44336", fg="white")
+clear_button.grid(row=0, column=0, padx=10)
+
+save_button = tk.Button(button_frame, text="Save", command=save_conversation, font=("Arial", 12), bg="#008CBA", fg="white")
+save_button.grid(row=0, column=1, padx=10)
 
 # Start the tkinter main loop
 window.mainloop()
