@@ -11,7 +11,7 @@ client = InferenceClient(
     token=huggingface_token,
 )
 
-def get_response():
+def get_response(event=None):
     user_query = query_entry.get()
     if not user_query.strip():
         messagebox.showwarning("Empty Query", "Please enter a query.")
@@ -92,6 +92,7 @@ query_label.grid(row=0, column=0, padx=5)
 
 query_entry = tk.Entry(frame, width=50, font=style["font"])
 query_entry.grid(row=0, column=1, padx=5)
+query_entry.bind("<Return>", get_response)  # Bind the Enter key to the get_response function
 
 send_button = tk.Button(frame, text="Send", command=get_response, font=style["font"], bg="#4CAF50", fg="white")
 send_button.grid(row=0, column=2, padx=5)
